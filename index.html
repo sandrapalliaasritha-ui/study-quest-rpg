@@ -1,0 +1,658 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Quest RPG — Student & Teacher Time-Management</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tone.js for crisp sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, #0b1674 0%, #091052 45%, #060b38 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .feature-card {
+            background-color: #1c1f26;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+            transition: transform 0.16s ease, background-color 0.16s ease;
+        }
+        .feature-card:active {
+            transform: scale(0.99);
+        }
+        .btn-open {
+            background-color: #2554c7;
+            transition: background-color 0.15s ease, transform 0.12s ease;
+        }
+        .btn-open:hover {
+            background-color: #2f64e3;
+        }
+        .btn-open:active {
+            transform: translateY(2px);
+        }
+    </style>
+</head>
+<body class="antialiased pb-12 px-4">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast-box" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-sm pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- Main Mobile-First Container -->
+    <div class="max-w-md mx-auto pt-8">
+
+        <!-- App Header -->
+        <header class="text-center mb-7">
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center justify-center gap-2.5">
+                <span>⚔️</span>
+                <span>Study Quest RPG</span>
+            </h1>
+            <p class="text-sm text-blue-200/85 mt-1.5 font-medium">
+                A simple time-management game for students &amp; teachers
+            </p>
+
+            <!-- Compact XP, Rank & Role Pill Bar -->
+            <div class="mt-4 inline-flex flex-wrap items-center justify-center gap-2 bg-black/35 border border-white/10 px-3.5 py-2 rounded-2xl text-xs">
+                <span id="hud-rank" class="font-bold text-amber-300">Lvl 1 • Apprentice</span>
+                <span class="text-white/30">|</span>
+                <span id="hud-xp" class="font-extrabold text-emerald-400">0 XP</span>
+                <span class="text-white/30">|</span>
+                <button id="role-toggle-btn" onclick="toggleRole()" class="font-bold text-blue-300 underline decoration-blue-400/60">
+                    🎓 Student Mode
+                </button>
+            </div>
+        </header>
+
+        <!-- HOME DASHBOARD VIEW: Clean Stacked Cards with "Open" Buttons -->
+        <main id="home-cards-view" class="flex flex-col gap-5">
+
+            <!-- Card 1: Focus Sprint Timer -->
+            <section class="feature-card rounded-2xl p-6 text-center">
+                <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                    <span>⏱️</span>
+                    <span>Focus Sprint Timer</span>
+                </h2>
+                <p class="text-sm text-gray-300 mt-2 mb-5">
+                    Run 15m or 25m study sprints and earn +100 XP.
+                </p>
+                <button onclick="openSection('timer-view')" class="btn-open text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow">
+                    Open
+                </button>
+            </section>
+
+            <!-- Card 2: Study Quest Log -->
+            <section class="feature-card rounded-2xl p-6 text-center">
+                <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                    <span>📜</span>
+                    <span>Study Quest Log</span>
+                </h2>
+                <p class="text-sm text-gray-300 mt-2 mb-5">
+                    Break chapters into timed missions &amp; defeat bosses.
+                </p>
+                <button onclick="openSection('quests-view')" class="btn-open text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow">
+                    Open
+                </button>
+            </section>
+
+            <!-- Card 3: Boss Quiz Strike -->
+            <section class="feature-card rounded-2xl p-6 text-center">
+                <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                    <span>⚡</span>
+                    <span>Boss Quiz Strike</span>
+                </h2>
+                <p class="text-sm text-gray-300 mt-2 mb-5">
+                    Answer quick active-recall questions for bonus XP.
+                </p>
+                <button onclick="openSection('quiz-view')" class="btn-open text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow">
+                    Open
+                </button>
+            </section>
+
+            <!-- Card 4: XP Reward Shop -->
+            <section class="feature-card rounded-2xl p-6 text-center">
+                <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                    <span>🎁</span>
+                    <span>XP Reward Shop</span>
+                </h2>
+                <p class="text-sm text-gray-300 mt-2 mb-5">
+                    Redeem your earned XP for guilt-free study breaks.
+                </p>
+                <button onclick="openSection('shop-view')" class="btn-open text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow">
+                    Open
+                </button>
+            </section>
+
+            <!-- Card 5: Teacher GM & AI Coach -->
+            <section class="feature-card rounded-2xl p-6 text-center">
+                <h2 class="text-xl font-bold text-white flex items-center justify-center gap-2">
+                    <span>🧙‍♂️</span>
+                    <span>Teacher GM &amp; AI Coach</span>
+                </h2>
+                <p class="text-sm text-gray-300 mt-2 mb-5">
+                    Award bonus XP or copy your AI study coach prompt.
+                </p>
+                <button onclick="openSection('coach-view')" class="btn-open text-white font-semibold text-sm px-7 py-2.5 rounded-lg shadow">
+                    Open
+                </button>
+            </section>
+
+        </main>
+
+        <!-- TOOL 1: FOCUS SPRINT TIMER VIEW -->
+        <section id="timer-view" class="hidden feature-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="goHome()" class="text-xs font-bold text-blue-300 hover:text-white flex items-center gap-1">
+                    ← Back to Menu
+                </button>
+                <span id="streak-pill" class="text-xs font-bold text-amber-300">🔥 Streak: 0/4</span>
+            </div>
+
+            <h2 class="text-xl font-bold text-center text-white">⏱️ Focus Sprint Timer</h2>
+            <p id="active-mission-banner" class="text-xs text-center text-blue-200 mt-1 truncate">
+                Active Quest: Solve 3 Linear Equations
+            </p>
+
+            <!-- Preset Duration Buttons -->
+            <div class="grid grid-cols-4 gap-2 mt-4">
+                <button onclick="setTimerPreset(25, '25m Focus Sprint')" class="py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold">25m</button>
+                <button onclick="setTimerPreset(15, '15m Beat Clock')" class="py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold">15m</button>
+                <button onclick="setTimerPreset(40, '40m Boss Battle')" class="py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-bold">40m</button>
+                <button onclick="setTimerPreset(5, '5m Rest Break')" class="py-2 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 text-xs font-bold">5m Rest</button>
+            </div>
+
+            <!-- Big Countdown Display -->
+            <div class="my-6 py-6 rounded-2xl bg-black/40 border border-white/10 text-center">
+                <div id="timer-status-text" class="text-xs uppercase tracking-wider text-gray-400">25m Focus Sprint • Ready</div>
+                <div id="timer-readout" class="text-5xl font-extrabold tracking-wider text-white mt-2 tabular-nums">
+                    25:00
+                </div>
+                <div class="text-[11px] text-emerald-400 mt-2 font-medium">
+                    🛡️ Zero-Distraction Shield (+100 XP)
+                </div>
+            </div>
+
+            <!-- Timer Controls -->
+            <div class="grid grid-cols-3 gap-2.5">
+                <button id="start-stop-btn" onclick="toggleTimer()" class="btn-open py-3 rounded-xl font-bold text-sm text-white">
+                    ▶ Start
+                </button>
+                <button onclick="completeQuestNow(false)" class="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold text-sm text-white">
+                    ✅ Finish
+                </button>
+                <button onclick="resetTimer()" class="py-3 rounded-xl bg-white/10 hover:bg-white/20 font-bold text-sm text-gray-200">
+                    ↺ Reset
+                </button>
+            </div>
+        </section>
+
+        <!-- TOOL 2: STUDY QUEST LOG VIEW -->
+        <section id="quests-view" class="hidden feature-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="goHome()" class="text-xs font-bold text-blue-300 hover:text-white">
+                    ← Back to Menu
+                </button>
+                <span class="text-xs text-gray-400">Tap a quest to activate</span>
+            </div>
+
+            <h2 class="text-xl font-bold text-center text-white mb-4">📜 Study Quest Log</h2>
+
+            <!-- Add Quest Form -->
+            <form onsubmit="createQuest(event)" class="flex flex-col gap-2.5 mb-5">
+                <input id="quest-title-input" type="text" required placeholder="e.g., Revise Chapter 3 Formulas..." class="w-full bg-black/40 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-400">
+                <div class="flex gap-2">
+                    <select id="quest-mins-select" class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-sm text-white">
+                        <option value="25">25 Mins (+100 XP)</option>
+                        <option value="15">15 Mins (+100 XP)</option>
+                        <option value="40">40 Mins Boss (+200 XP)</option>
+                    </select>
+                    <button type="submit" class="btn-open px-5 py-2.5 rounded-xl text-sm font-bold text-white">
+                        + Add
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quests List -->
+            <div id="quests-container" class="flex flex-col gap-2.5 max-h-80 overflow-y-auto"></div>
+        </section>
+
+        <!-- TOOL 3: BOSS QUIZ STRIKE VIEW -->
+        <section id="quiz-view" class="hidden feature-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="goHome()" class="text-xs font-bold text-blue-300 hover:text-white">
+                    ← Back to Menu
+                </button>
+                <span class="text-xs font-bold text-amber-300">+40 XP per hit</span>
+            </div>
+
+            <h2 class="text-xl font-bold text-center text-white mb-2">⚡ Boss Quiz Strike</h2>
+            <p class="text-xs text-center text-gray-300 mb-5">
+                Test your focus with rapid recall questions!
+            </p>
+
+            <div class="bg-black/40 border border-white/10 rounded-xl p-4 mb-4">
+                <p id="quiz-prompt" class="text-sm font-bold text-white leading-relaxed">
+                    Loading question...
+                </p>
+            </div>
+
+            <div id="quiz-choices" class="flex flex-col gap-2.5"></div>
+        </section>
+
+        <!-- TOOL 4: XP REWARD SHOP VIEW -->
+        <section id="shop-view" class="hidden feature-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="goHome()" class="text-xs font-bold text-blue-300 hover:text-white">
+                    ← Back to Menu
+                </button>
+                <span class="text-xs font-extrabold text-emerald-400">Balance: <span id="shop-balance">0</span> XP</span>
+            </div>
+
+            <h2 class="text-xl font-bold text-center text-white mb-1">🎁 XP Reward Shop</h2>
+            <p class="text-xs text-center text-gray-300 mb-5">
+                Trade your hard-earned XP for guilt-free breaks
+            </p>
+
+            <div id="shop-items-container" class="flex flex-col gap-3"></div>
+        </section>
+
+        <!-- TOOL 5: TEACHER GM & AI COACH VIEW -->
+        <section id="coach-view" class="hidden feature-card rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <button onclick="goHome()" class="text-xs font-bold text-blue-300 hover:text-white">
+                    ← Back to Menu
+                </button>
+                <span class="text-xs font-bold text-amber-300">GM &amp; AI Tools</span>
+            </div>
+
+            <h2 class="text-xl font-bold text-center text-white mb-4">🧙‍♂️ Teacher GM &amp; AI Coach</h2>
+
+            <!-- Teacher Bonus XP Awards -->
+            <div class="mb-5">
+                <p class="text-xs font-bold uppercase tracking-wider text-amber-300 mb-2">Teacher Instant Bonus Awards</p>
+                <div class="grid grid-cols-1 gap-2">
+                    <button onclick="addXP(100, 'High Accuracy Bonus!')" class="py-2.5 px-4 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-bold text-left">
+                        ⭐ +100 XP • High Accuracy &amp; Clear Steps
+                    </button>
+                    <button onclick="addXP(50, 'Tough Topic Mastered!')" class="py-2.5 px-4 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-200 text-xs font-bold text-left">
+                        🔥 +50 XP • Mastered a Difficult Topic
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Study Coach Prompt -->
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-blue-300 mb-2">AI Study Coach Prompt</p>
+                <div id="ai-coach-text" class="bg-black/45 border border-white/10 rounded-xl p-3 text-xs text-gray-200 leading-relaxed mb-3">
+                    "Act as my strict Time-Management Study Coach. My current quest is 'Solve 3 Linear Equations' (15 mins). Break it into steps, keep me on pace, and quiz me with 3 fast questions when I finish."
+                </div>
+                <button onclick="copyCoachText()" class="btn-open w-full py-2.5 rounded-xl text-xs font-bold text-white">
+                    📋 Copy Coach Prompt
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- SAVED GAME STATE ---
+        const SAVE_KEY = 'study_quest_mobile_v1';
+        const defaultData = {
+            xp: 0,
+            streak: 0,
+            role: 'student',
+            quests: [
+                { id: 1, title: 'Solve 3 Linear Equations (15m Blitz)', mins: 15, xp: 100, done: false },
+                { id: 2, title: 'Summarize Chapter 4 Key Concepts', mins: 25, xp: 100, done: false },
+                { id: 3, title: 'Boss Battle: 5 Physics Numericals', mins: 40, xp: 200, done: false }
+            ],
+            activeQuestId: 1
+        };
+
+        let state = loadState();
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(SAVE_KEY);
+                return saved ? { ...defaultData, ...JSON.parse(saved) } : JSON.parse(JSON.stringify(defaultData));
+            } catch (e) {
+                return JSON.parse(JSON.stringify(defaultData));
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+            } catch (e) {}
+        }
+
+        // --- NAVIGATION BETWEEN DASHBOARD CARDS & VIEWS ---
+        const allViews = ['home-cards-view', 'timer-view', 'quests-view', 'quiz-view', 'shop-view', 'coach-view'];
+
+        function openSection(viewId) {
+            allViews.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(viewId);
+            if (target) target.classList.remove('hidden');
+
+            if (viewId === 'quiz-view') loadRandomQuiz();
+            renderAll();
+        }
+
+        function goHome() {
+            openSection('home-cards-view');
+        }
+
+        // --- SOUND & TOAST FEEDBACK ---
+        function playTone(kind) {
+            try {
+                if (typeof Tone === 'undefined') return;
+                Tone.start();
+                const synth = new Tone.Synth().toDestination();
+                const now = Tone.now();
+                if (kind === 'win') {
+                    synth.triggerAttackRelease('C5', '16n', now);
+                    synth.triggerAttackRelease('E5', '16n', now + 0.09);
+                    synth.triggerAttackRelease('G5', '8n', now + 0.18);
+                } else {
+                    synth.triggerAttackRelease('A4', '16n', now);
+                }
+            } catch (e) {}
+        }
+
+        function notify(msg) {
+            const box = document.getElementById('toast-box');
+            const item = document.createElement('div');
+            item.className = 'bg-slate-900/95 border border-blue-400/50 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-xl text-center transition-opacity duration-300';
+            item.textContent = msg;
+            box.appendChild(item);
+            setTimeout(() => {
+                item.style.opacity = '0';
+                setTimeout(() => item.remove(), 300);
+            }, 2800);
+        }
+
+        // --- ROLE & XP ---
+        function toggleRole() {
+            state.role = state.role === 'student' ? 'teacher' : 'student';
+            saveState();
+            renderAll();
+            notify(state.role === 'teacher' ? 'Switched to Teacher GM Mode 🧙‍♂️' : 'Switched to Student Mode 🎓');
+        }
+
+        function addXP(points, reason) {
+            state.xp += points;
+            playTone('win');
+            saveState();
+            renderAll();
+            notify(`+${points} XP • ${reason}`);
+        }
+
+        function getRankLabel(xp) {
+            if (xp >= 1500) return 'Lvl 4 • Grandmaster';
+            if (xp >= 1000) return 'Lvl 3 • Strategist';
+            if (xp >= 500) return 'Lvl 2 • Scholar';
+            return 'Lvl 1 • Apprentice';
+        }
+
+        // --- TIMER LOGIC ---
+        let totalSecs = 25 * 60;
+        let remSecs = 25 * 60;
+        let timerLabel = '25m Focus Sprint';
+        let isRunning = false;
+        let intervalId = null;
+
+        function formatSecs(s) {
+            const mins = Math.floor(s / 60).toString().padStart(2, '0');
+            const secs = (s % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function setTimerPreset(mins, label) {
+            stopTimer();
+            totalSecs = mins * 60;
+            remSecs = totalSecs;
+            timerLabel = label;
+            document.getElementById('timer-readout').textContent = formatSecs(remSecs);
+            document.getElementById('timer-status-text').textContent = `${label} • Ready`;
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                stopTimer();
+            } else {
+                isRunning = true;
+                playTone('tap');
+                document.getElementById('start-stop-btn').textContent = '⏸ Pause';
+                document.getElementById('timer-status-text').textContent = `${timerLabel} • In Progress`;
+                intervalId = setInterval(() => {
+                    if (remSecs > 0) {
+                        remSecs--;
+                        document.getElementById('timer-readout').textContent = formatSecs(remSecs);
+                    } else {
+                        completeQuestNow(true);
+                    }
+                }, 1000);
+            }
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(intervalId);
+            document.getElementById('start-stop-btn').textContent = '▶ Start';
+            document.getElementById('timer-status-text').textContent = `${timerLabel} • Paused`;
+        }
+
+        function resetTimer() {
+            stopTimer();
+            remSecs = totalSecs;
+            document.getElementById('timer-readout').textContent = formatSecs(remSecs);
+            document.getElementById('timer-status-text').textContent = `${timerLabel} • Ready`;
+        }
+
+        function completeQuestNow(onZero) {
+            stopTimer();
+            if (timerLabel.toLowerCase().includes('rest')) {
+                notify('Rest complete! Ready for next sprint.');
+                setTimerPreset(25, '25m Focus Sprint');
+                return;
+            }
+            const q = state.quests.find(item => item.id === state.activeQuestId);
+            let reward = q ? q.xp : 100;
+            if (q) q.done = true;
+
+            state.streak++;
+            let note = onZero ? 'Sprint Completed!' : 'Finished Early (+50 Bonus XP)!';
+            if (!onZero) reward += 50;
+
+            if (state.streak >= 4) {
+                reward += 150;
+                note += ' 🔥 4-Sprint Streak (+150 XP)!';
+                state.streak = 0;
+            }
+
+            addXP(reward, note);
+            resetTimer();
+        }
+
+        // --- QUESTS ---
+        function createQuest(e) {
+            e.preventDefault();
+            const input = document.getElementById('quest-title-input');
+            const select = document.getElementById('quest-mins-select');
+            const title = input.value.trim();
+            if (!title) return;
+
+            const mins = parseInt(select.value, 10);
+            const newQuest = {
+                id: Date.now(),
+                title,
+                mins,
+                xp: mins >= 40 ? 200 : 100,
+                done: false
+            };
+            state.quests.unshift(newQuest);
+            activateQuest(newQuest.id);
+            input.value = '';
+            notify('Quest added & selected!');
+        }
+
+        function activateQuest(id) {
+            state.activeQuestId = id;
+            const q = state.quests.find(item => item.id === id);
+            if (q) {
+                setTimerPreset(q.mins, `${q.mins}m Quest Sprint`);
+                document.getElementById('ai-coach-text').textContent =
+                    `"Act as my strict Time-Management Study Coach. My current quest is '${q.title}' (${q.mins} mins). Break it into steps, keep me on pace, and quiz me with 3 fast questions when I finish."`;
+            }
+            saveState();
+            renderAll();
+        }
+
+        function deleteQuest(id, e) {
+            e.stopPropagation();
+            state.quests = state.quests.filter(q => q.id !== id);
+            if (state.activeQuestId === id) {
+                state.activeQuestId = state.quests[0]?.id || null;
+            }
+            saveState();
+            renderAll();
+        }
+
+        // --- QUIZ ---
+        const quizQuestions = [
+            { q: 'If 3x + 6 = 21, what is x?', opts: ['5', '7', '15', '3'], ans: '5' },
+            { q: 'How long is 1 standard Pomodoro Focus Sprint?', opts: ['25 minutes', '60 minutes', '5 minutes', '90 minutes'], ans: '25 minutes' },
+            { q: 'What is the SI unit of Force?', opts: ['Newton (N)', 'Joule (J)', 'Watt (W)', 'Pascal (Pa)'], ans: 'Newton (N)' },
+            { q: 'Which Python method removes outer whitespace from a string?', opts: ['.strip()', '.split()', '.replace()', '.cut()'], ans: '.strip()' }
+        ];
+
+        function loadRandomQuiz() {
+            const item = quizQuestions[Math.floor(Math.random() * quizQuestions.length)];
+            document.getElementById('quiz-prompt').textContent = item.q;
+            const box = document.getElementById('quiz-choices');
+            box.innerHTML = '';
+
+            [...item.opts].sort(() => Math.random() - 0.5).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left p-3.5 rounded-xl bg-white/10 hover:bg-blue-600/40 border border-white/10 text-sm font-semibold text-white transition';
+                btn.textContent = opt;
+                btn.onclick = () => {
+                    if (opt === item.ans) {
+                        addXP(40, 'Direct Quiz Hit!');
+                        loadRandomQuiz();
+                    } else {
+                        notify('Not quite! Try the next question.');
+                        loadRandomQuiz();
+                    }
+                };
+                box.appendChild(btn);
+            });
+        }
+
+        // --- REWARD SHOP ---
+        const rewardsList = [
+            { icon: '📱', name: '15 Min Guilt-Free Socials / YouTube', cost: 300 },
+            { icon: '☕', name: 'Favorite Snack, Tea/Coffee, or 30m Nap', cost: 500 },
+            { icon: '🎮', name: 'Watch 1 Show Episode or Play a Game', cost: 1000 },
+            { icon: '👑', name: 'Full Evening Off (Zero Study Guilt!)', cost: 2000 }
+        ];
+
+        function redeemItem(cost, name) {
+            if (state.xp < cost) {
+                notify(`Need ${cost - state.xp} more XP to unlock this reward!`);
+                return;
+            }
+            state.xp -= cost;
+            playTone('win');
+            saveState();
+            renderAll();
+            notify(`🎉 Unlocked: ${name}!`);
+        }
+
+        function copyCoachText() {
+            const text = document.getElementById('ai-coach-text').textContent.trim();
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            notify('AI Coach prompt copied!');
+        }
+
+        // --- RENDER UI ---
+        function renderAll() {
+            document.getElementById('hud-rank').textContent = getRankLabel(state.xp);
+            document.getElementById('hud-xp').textContent = `${state.xp} XP`;
+            document.getElementById('shop-balance').textContent = state.xp;
+            document.getElementById('streak-pill').textContent = `🔥 Streak: ${state.streak}/4`;
+            document.getElementById('role-toggle-btn').textContent =
+                state.role === 'teacher' ? '🧙‍♂️ Teacher GM' : '🎓 Student Mode';
+
+            const activeQ = state.quests.find(q => q.id === state.activeQuestId);
+            document.getElementById('active-mission-banner').textContent = activeQ
+                ? `Active Quest: ${activeQ.title}`
+                : 'Active Quest: Select one in Quest Log';
+
+            // Quests list
+            const qBox = document.getElementById('quests-container');
+            qBox.innerHTML = '';
+            state.quests.forEach(q => {
+                const isCurrent = q.id === state.activeQuestId;
+                const row = document.createElement('div');
+                row.onclick = () => activateQuest(q.id);
+                row.className = `cursor-pointer p-3.5 rounded-xl border flex items-center justify-between gap-2 ${
+                    isCurrent ? 'bg-blue-600/30 border-blue-400' : 'bg-black/35 border-white/10'
+                }`;
+                row.innerHTML = `
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold truncate ${q.done ? 'line-through text-gray-400' : 'text-white'}">
+                            ${q.done ? '✅' : (isCurrent ? '⚔️' : '📌')} ${q.title}
+                        </p>
+                        <p class="text-xs text-gray-300 mt-0.5">${q.mins} mins • <span class="text-emerald-400 font-bold">+${q.xp} XP</span></p>
+                    </div>
+                    <button onclick="deleteQuest(${q.id}, event)" class="text-gray-400 hover:text-rose-400 px-2 py-1 text-xs">✕</button>
+                `;
+                qBox.appendChild(row);
+            });
+
+            // Shop items
+            const sBox = document.getElementById('shop-items-container');
+            sBox.innerHTML = '';
+            rewardsList.forEach(r => {
+                const canBuy = state.xp >= r.cost;
+                const card = document.createElement('div');
+                card.className = 'p-3.5 rounded-xl bg-black/35 border border-white/10 flex items-center justify-between gap-3';
+                card.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="text-xl">${r.icon}</span>
+                        <div class="min-w-0">
+                            <p class="text-xs sm:text-sm font-bold text-white truncate">${r.name}</p>
+                            <p class="text-xs font-bold text-amber-300">${r.cost} XP</p>
+                        </div>
+                    </div>
+                    <button onclick="redeemItem(${r.cost}, '${r.name.replace(/'/g, "\\'")}')"
+                        class="btn-open shrink-0 px-4 py-2 rounded-lg text-xs font-bold text-white ${canBuy ? '' : 'opacity-45'}">
+                        Open
+                    </button>
+                `;
+                sBox.appendChild(card);
+            });
+        }
+
+        window.onload = function() {
+            renderAll();
+        };
+    </script>
+</body>
+</html>
+```
